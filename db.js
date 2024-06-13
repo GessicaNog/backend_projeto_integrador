@@ -15,21 +15,21 @@ async function connect() {
 
 const COLLECTION = 'arq';
 
-async function findAll() {
+async function findAll(collection) {
     const db = await connect();
-    return db.collection(COLLECTION).find().toArray();
+    return db.collection(collection).find().toArray();
 
 }
 
-async function insert(arq) {
+async function insert(collection, arq) {
     const db = await connect();
-    return db.collection(COLLECTION).insertOne(arq);
+    return db.collection(collection).insertOne(arq);
 }
 
 
-async function findOne(id) {
+async function findOne(collection,id) {
     const db = await connect();
-    return db.collection(COLLECTION).findOne({ _id: ObjectId.createFromHexString(id) });
+    return db.collection(collection).findOne({ _id: ObjectId.createFromHexString(id) });
 }
 
 
@@ -38,9 +38,9 @@ async function update(id, arq) {
     return db.collection(COLLECTION).updateOne({ _id: ObjectId.createFromHexString(id) }, { $set: arq });
 }
 
-async function deleteOne(id){
+async function deleteOne(collection,id){
     const db = await connect();
-    return db.collection(COLLECTION).deleteOne({ _id: ObjectId.createFromHexString(id)});
+    return db.collection(collection).deleteOne({ _id: ObjectId.createFromHexString(id)});
 
 }
 
