@@ -13,7 +13,6 @@ async function connect() {
     return singleton;
 }
 
-const COLLECTION = 'arq';
 
 async function findAll(collection) {
     const db = await connect();
@@ -27,20 +26,20 @@ async function insert(collection, arq) {
 }
 
 
-async function findOne(collection,id) {
+async function findOne(collection, id) {
     const db = await connect();
     return db.collection(collection).findOne({ _id: ObjectId.createFromHexString(id) });
 }
 
 
-async function update(id, arq) {
+async function update(collection, id, doc) {
     const db = await connect();
-    return db.collection(COLLECTION).updateOne({ _id: ObjectId.createFromHexString(id) }, { $set: arq });
+    return db.collection(collection).updateOne({ _id: ObjectId.createFromHexString(id) }, { $set: doc });
 }
 
-async function deleteOne(collection,id){
+async function deleteOne(collection, id) {
     const db = await connect();
-    return db.collection(collection).deleteOne({ _id: ObjectId.createFromHexString(id)});
+    return db.collection(collection).deleteOne({ _id: ObjectId.createFromHexString(id) });
 
 }
 
