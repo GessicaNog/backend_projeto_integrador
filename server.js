@@ -53,7 +53,7 @@ app.post('/atividades', async (req, res, next) => {
 });
 app.delete('/atividades/:id', async (req, res, next) => {
     const id = req.params.id;
-   
+
     try {
         const result = await db.deleteOne(COLLECTION_ATIVIDADES, id);
         res.send('Apagado com sucesso');
@@ -69,7 +69,6 @@ app.post('/gerarPdf', async (req, res, next) => {
     const tipoDeServico = req.body.tipoDeServico;
     const cidade = req.body.cidade;
     const telefone = req.body.telefone;
-    const email = req.body.email;
     const valorHoraTrabalhada = req.body.valorHoraTrabalhada;
     const qtdHorasTrabalhadas = req.body.qtdHorasTrabalhadas;
     const observacao = req.body.observacao;
@@ -78,76 +77,110 @@ app.post('/gerarPdf', async (req, res, next) => {
     const date = new Date().toLocaleDateString()
     let file = {
         content: `
-        <html>
-        <head>
-        <style>
-        
+       <html>
+<head>
+    <style>
         body {
             font-family: Arial, sans-serif;
             width: 600px;
             margin: 0 auto;
             padding: 20px;
-            border: 1px solid #000;
+            background-color: #f2f2f2;
+        }
+        .recibo-container {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
             margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
         }
         p {
-            margin: 20px 0;
+            margin: 10px 0;
+            color: #555;
         }
         .recibo {
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        .assinaturas {
-            margin-top: 60px;
+        .section-title {
+            font-weight: bold;
+            color: #333;
+            margin-top: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
         }
-        .assinaturas p {
-            margin-top: 60px;
+        .content {
+            margin-top: 20px;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #333;
+            display: inline-block;
+            width: 200px;
         }
         .observacoes {
             margin-top: 30px;
         }
+        .assinaturas {
+            margin-top: 60px;
+            text-align: center;
+        }
+        .assinaturas p {
+            margin-top: 60px;
+            position: relative;
+        }
+        .assinaturas p::before {
+            content: "";
+            display: block;
+            width: 200px;
+            height: 1px;
+            background: #333;
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+        }
     </style>
-       
-        </head>
-        <body>
-            <h1> RECIBO  DE PAGAMENTO</h1>
-            <p> <b> NOME:</b> ${name} </P>
-            <P> <b> CPF :</b> ${cpf} </P>
-            <P> <b> TIPO DE SERVIÇO : </b> ${tipoDeServico} </P>
-            <P> <b> CIDADE DA SUA EMPRESA : </b> ${cidade} </p>   
-            <P> <b> TELEFONE DO PRESTADOR DE SERVIÇO: </b> ${telefone} </p>  
-            <P> <b> EMAIL DO PRESTADOR DE SERVIÇO: </b> ${email} </p>  
-            <P> <b> VALOR DA HORA TRABALHADA : </b> ${valorHoraTrabalhada} </p> 
-            <P> <b> QUANTIDADES DE HORAS TRABALHADAS : </b> ${qtdHorasTrabalhadas} </p> 
-            <P> <b> VALOR TOTAL R$ : </b> ${qtdHorasTrabalhadas * valorHoraTrabalhada} </p> 
-             <P> <b> OBSERVAÇÕES : </b> ${observacao} </p>
-
-             <P> <b> DATA DO PAGAMENTO: </b> ${date}
-
-             <P> <b> Recebi a quantia acima especificada referente ao serviço prestado descrito neste recibo.</b> </P>
-
-
-             <P> <b> ASSINATURA DO PRESTADOR DE SERVIÇO: <br><br>________________________________________________ </b> </p>
-
-
-
-        
-        
-        </body>
-        </html>
+</head>
+<body>
+    <div class="recibo-container">
+        <h1>RECIBO DE PAGAMENTO</h1>
+        <div class="content">
+            <p><span class="field-label">NOME:</span> ${name}</p>
+            <p><span class="field-label">CPF:</span> ${cpf}</p>
+            <p><span class="field-label">TIPO DE SERVIÇO:</span> ${tipoDeServico}</p>
+            <p><span class="field-label">CIDADE DA SUA EMPRESA:</span> ${cidade}</p>
+            <p><span class="field-label">TELEFONE DO PRESTADOR DE SERVIÇO:</span> ${telefone}</p>
+            <p><span class="field-label">VALOR DA HORA TRABALHADA:</span> ${valorHoraTrabalhada}</p>
+            <p><span class="field-label">QUANTIDADE DE HORAS TRABALHADAS:</span> ${qtdHorasTrabalhadas}</p>
+            <p><span class="field-label">VALOR TOTAL R$:</span> ${qtdHorasTrabalhadas * valorHoraTrabalhada}</p>
+            <p><span class="field-label">OBSERVAÇÕES:</span> ${observacao}</p>
+            <p><span class="field-label">DATA DO PAGAMENTO:</span> ${date}</p>
+        </div>
+        <div class="section-title">Recebi a quantia acima especificada referente ao serviço prestado descrito neste recibo.</div>
+        <div class="assinaturas">
+            <p><span class="field-label">ASSINATURA DO PRESTADOR DE SERVIÇO:</span></p>
+            <p>________________________________________________</p>
+        </div>
+    </div>
+</body>
+</html>
         `
     };
     htmlToPdf.generatePdf(file, { format: 'A4' }).then(async pdfBuffer => {
-         try {
-             const result = await db.insert(COLLECTION_USER, { cpf, pdf: pdfBuffer });
-             console.log(result);
-             res.send('Arquivo salvo com sucesso')
-         } catch (err) {
-             next(err);
-         }
-        
+        try {
+            const result = await db.insert(COLLECTION_USER, { cpf, pdf: pdfBuffer });
+
+            res.send(result);
+        } catch (err) {
+            next(err);
+        }
+
     });
 });
 
@@ -166,7 +199,7 @@ app.get('/buscarPdf/:id', async (req, res, next) => {
         next(err);
     }
 });
- app.get('/users', async (req, res, next) => {
+app.get('/users', async (req, res, next) => {
     try {
         const docs = await db.findAll(COLLECTION_USER);
         res.send(docs);
